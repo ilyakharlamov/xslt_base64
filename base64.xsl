@@ -3,13 +3,18 @@
 	xmlns:b64="https://github.com/ilyakharlamov/xslt_base64" 
 	xmlns:local="http://localhost/base64.xsl"
 	xmlns:test="http://localhost/test">
-	<xsl:variable name="datamap" select="document('base64_datamap.xml')"/>
+	<xsl:variable name="datamap" select="document('file:///C:/tmp/GitHub/xslt_base64/base64_datamap.xml')"/>
+	
 
-	<!--xsl:template match="/">
+	<xsl:template match="/">
+		<!--xsl:call-template name="test:test">
+			<xsl:with-param name="asciiString" select="'a'"/>
+		</xsl:call-template-->
+			
 		<xsl:call-template name="test:test">
 			<xsl:with-param name="asciiString" select="'Hello World!'"/>
 		</xsl:call-template>
-		<xsl:call-template name="test:test">
+		<!--xsl:call-template name="test:test">
 			<xsl:with-param name="asciiString" select="'This is a base64 encoding'"/>
 		</xsl:call-template>
 		<xsl:call-template name="test:test">
@@ -46,8 +51,8 @@
 				</xsl:call-template>
 			</xsl:with-param>
 			<xsl:with-param name="name" select="'urls'"/>
-		</xsl:call-template>
-	</xsl:template-->
+		</xsl:call-template-->
+	</xsl:template>
 
 	<xsl:template name="test:test">
 		<xsl:param name="asciiString"/>
@@ -177,10 +182,10 @@
 							<xsl:with-param name="index" select="0"/>
 						</xsl:call-template>
 					</xsl:variable>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit1]/base64"/>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit2]/base64"/>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit3]/base64"/>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit4]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit1]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit2]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit3]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit4]/base64"/>
 					<xsl:call-template name="b64:encode">
 						<xsl:with-param name="asciiString" select="substring($asciiString, 4)"/>
 						<xsl:with-param name="padding" select="$padding"/>
@@ -203,9 +208,9 @@
 						</xsl:call-template>
 					</xsl:variable>
 					
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit1]/base64"/>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit2]/base64"/>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit3]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit1]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit2]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit3]/base64"/>
 					<xsl:if test="$padding">=</xsl:if>
 				</xsl:when>
 				
@@ -218,8 +223,8 @@
 							<xsl:with-param name="index" select="0"/>
 						</xsl:call-template>
 					</xsl:variable>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit1]/base64"/>
-					<xsl:value-of select="$datamap/datamap/decimalbase64/char[value = $digit2]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit1]/base64"/>
+					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit2]/base64"/>
 					<xsl:if test="$padding">==</xsl:if>
 				</xsl:when>
 			</xsl:choose>
@@ -305,7 +310,7 @@
 		<xsl:param name="string"/>
 		<xsl:variable name="char" select="substring($string, 1, 1)"/>
 		<xsl:if test="$char != ''">
-			<xsl:variable name="decimal" select="$datamap/datamap/asciidecimal/char[ascii = $char]/decimal"/>
+			<xsl:variable name="decimal" select="$datamap/datamap/asciidecimal/item[ascii = $char]/decimal"/>
 			<xsl:choose>
 				<xsl:when test="$decimal &lt; 64">
 					<xsl:text>00</xsl:text>
@@ -436,7 +441,7 @@
 					<xsl:with-param name="index" select="0"/>
 				</xsl:call-template>
 			</xsl:variable>
-			<xsl:value-of select="$datamap/datamap/asciidecimal/char[decimal = $asciiDecimal]/ascii"/>
+			<xsl:value-of select="$datamap/datamap/asciidecimal/item[decimal = $asciiDecimal]/ascii"/>
 			<xsl:call-template name="local:base64BinaryStringToAscii">
 				<xsl:with-param name="binaryString" select="substring($binaryString, 9)"/>
 			</xsl:call-template>
@@ -450,7 +455,7 @@
 			<xsl:variable name="binary">
 				<xsl:call-template name="local:decimalToBinary">
 					<xsl:with-param name="decimal"
-						select="$datamap/datamap/decimalbase64/char[base64 = substring($string, 1, 1)]/value"/>
+						select="$datamap/datamap/decimalbase64/item[base64 = substring($string, 1, 1)]/decimal"/>
 					<xsl:with-param name="prev" select="''"/>
 				</xsl:call-template>
 			</xsl:variable>
