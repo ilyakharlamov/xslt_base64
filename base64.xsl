@@ -3,18 +3,25 @@
 	xmlns:b64="https://github.com/ilyakharlamov/xslt_base64" 
 	xmlns:local="http://localhost/base64.xsl"
 	xmlns:test="http://localhost/test">
-	<xsl:variable name="datamap" select="document('file:///C:/tmp/GitHub/xslt_base64/base64_datamap.xml')"/>
+	<xsl:variable name="datamap" select="document('base64_datamap.xml')"/>
+	<xsl:variable name="binarydatamap" select="document('base64_binarydatamap.xml')"/>
 	
 
 	<xsl:template match="/">
-		<!--xsl:call-template name="test:test">
-			<xsl:with-param name="asciiString" select="'a'"/>
-		</xsl:call-template-->
-			
+		<xsl:call-template name="test:encodeEquals">
+			<xsl:with-param name="expected" select="'MQ=='"/>
+			<xsl:with-param name="source" select="'1'"/>
+			<xsl:with-param name="name" select="'Digit to b64'"/>
+		</xsl:call-template>
+		<xsl:call-template name="test:encodeEquals">
+			<xsl:with-param name="expected" select="'TWFu'"/>
+			<xsl:with-param name="source" select="'Man'"/>
+			<xsl:with-param name="name" select="'Digit to b64'"/>
+			</xsl:call-template>
 		<xsl:call-template name="test:test">
 			<xsl:with-param name="asciiString" select="'Hello World!'"/>
 		</xsl:call-template>
-		<!--xsl:call-template name="test:test">
+		<xsl:call-template name="test:test">
 			<xsl:with-param name="asciiString" select="'This is a base64 encoding'"/>
 		</xsl:call-template>
 		<xsl:call-template name="test:test">
@@ -24,11 +31,6 @@
 			<xsl:with-param name="expected" select="'1'"/>
 			<xsl:with-param name="encodedResult" select="'MQ'"/>
 			<xsl:with-param name="name" select="'Missing padding'"/>
-		</xsl:call-template>
-		<xsl:call-template name="test:encodeEquals">
-			<xsl:with-param name="expected" select="'MQ=='"/>
-			<xsl:with-param name="source" select="'1'"/>
-			<xsl:with-param name="name" select="'Digit to b64'"/>
 		</xsl:call-template>
 		<xsl:call-template name="test:equals">
 			<xsl:with-param name="expected" select="'UGFyYWdyYXBoU3R5bGUvU3RvcnkgQm9keQ'"/>
@@ -40,7 +42,6 @@
 			</xsl:with-param>
 			<xsl:with-param name="name" select="'nopadding'"/>
 		</xsl:call-template>
-		
 		<xsl:call-template name="test:equals">
 			<xsl:with-param name="expected" select="'Li5hPzw-Pz8_'"></xsl:with-param>
 			<xsl:with-param name="result">
@@ -51,7 +52,7 @@
 				</xsl:call-template>
 			</xsl:with-param>
 			<xsl:with-param name="name" select="'urls'"/>
-		</xsl:call-template-->
+		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template name="test:test">
@@ -146,6 +147,76 @@
 		<xsl:param name="asciiString"/>
 		<xsl:param name="padding" select="true()"/>
 		<xsl:param name="urlsafe" select="false()"/>
+		<xsl:variable name="result">
+			<xsl:variable name="binary">
+				<xsl:call-template name="local:asciiStringToBinary">
+					<xsl:with-param name="string" select="$asciiString"/>
+				</xsl:call-template>
+			</xsl:variable>
+			<xsl:call-template name="local:binaryToBase64">
+				<xsl:with-param name="binary" select="$binary"/>
+				<xsl:with-param name="padding" select="$padding"/>
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:choose>
+			<xsl:when test="$urlsafe">
+				<xsl:value-of select="translate($result,'+/','-_')"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$result"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+	<xsl:template name="local:binaryToBase64">
+		<xsl:param name="binary"/>
+		<xsl:param name="padding"/>
+		<xsl:call-template name="local:sixbitToBase64">
+			<xsl:with-param name="sixbit" select="substring($binary, 1, 6)"/>
+			<xsl:with-param name="padding" select="$padding"/>
+		</xsl:call-template>
+		<xsl:call-template name="local:sixbitToBase64">
+			<xsl:with-param name="sixbit" select="substring($binary, 7, 6)"/>
+			<xsl:with-param name="padding" select="$padding"/>
+		</xsl:call-template>
+		<xsl:call-template name="local:sixbitToBase64">
+			<xsl:with-param name="sixbit" select="substring($binary, 13, 6)"/>
+			<xsl:with-param name="padding" select="$padding"/>
+		</xsl:call-template>
+		<xsl:call-template name="local:sixbitToBase64">
+			<xsl:with-param name="sixbit" select="substring($binary, 19, 6)"/>
+			<xsl:with-param name="padding" select="$padding"/>
+		</xsl:call-template>
+		<xsl:variable name="remaining" select="substring($binary, 25)"/>
+		<xsl:if test="$remaining != ''">
+			<xsl:call-template name="local:binaryToBase64">
+				<xsl:with-param name="binary" select="$remaining"/>
+				<xsl:with-param name="padding" select="$padding"/>
+			</xsl:call-template>
+		</xsl:if>		
+	</xsl:template>
+	<xsl:template name="local:sixbitToBase64">
+		<xsl:param name="sixbit"/>
+		<xsl:param name="padding"/>
+		<xsl:variable name="len" select="string-length($sixbit)"></xsl:variable>
+		<xsl:variable name="realsixbit">
+			<xsl:value-of select="$sixbit"/>
+			<xsl:if test="$len=1">00000</xsl:if>
+			<xsl:if test="$len=2">0000</xsl:if>
+			<xsl:if test="$len=3">000</xsl:if>
+			<xsl:if test="$len=4">00</xsl:if>
+			<xsl:if test="$len=5">0</xsl:if>
+		</xsl:variable>
+		<xsl:variable name="result" select="$binarydatamap/datamap/binarybase64/item[binary = $realsixbit]/base64/text()"/>
+		<xsl:value-of select="$result"/>
+		<xsl:if test="string-length($realsixbit) = 0 and $padding">=</xsl:if>
+	</xsl:template>
+	
+	
+	<xsl:template name="b64:encode2">
+		<xsl:param name="asciiString"/>
+		<xsl:param name="padding" select="true()"/>
+		<xsl:param name="urlsafe" select="false()"/>
 		<xsl:variable name="binaryAsciiString">
 			<xsl:call-template name="local:asciiStringToBinary">
 				<xsl:with-param name="string" select="substring($asciiString, 1, 3)"/>
@@ -155,8 +226,6 @@
 			<xsl:variable name="digit1">
 				<xsl:call-template name="local:binaryToDecimal">
 					<xsl:with-param name="binary" select="substring($binaryAsciiString, 1, 6)"/>
-					<xsl:with-param name="sum" select="0"/>
-					<xsl:with-param name="index" select="0"/>
 				</xsl:call-template>
 			</xsl:variable>
 			<xsl:choose>
@@ -164,22 +233,16 @@
 					<xsl:variable name="digit2">
 						<xsl:call-template name="local:binaryToDecimal">
 							<xsl:with-param name="binary" select="substring($binaryAsciiString, 7, 6)"/>
-							<xsl:with-param name="sum" select="0"/>
-							<xsl:with-param name="index" select="0"/>
 						</xsl:call-template>
 					</xsl:variable>
 					<xsl:variable name="digit3">
 						<xsl:call-template name="local:binaryToDecimal">
 							<xsl:with-param name="binary" select="substring($binaryAsciiString, 13, 6)"/>
-							<xsl:with-param name="sum" select="0"/>
-							<xsl:with-param name="index" select="0"/>
 						</xsl:call-template>
 					</xsl:variable>
 					<xsl:variable name="digit4">
 						<xsl:call-template name="local:binaryToDecimal">
 							<xsl:with-param name="binary" select="substring($binaryAsciiString, 19, 6)"/>
-							<xsl:with-param name="sum" select="0"/>
-							<xsl:with-param name="index" select="0"/>
 						</xsl:call-template>
 					</xsl:variable>
 					<xsl:value-of select="$datamap/datamap/decimalbase64/item[decimal = $digit1]/base64"/>
@@ -195,16 +258,12 @@
 					<xsl:variable name="digit2">
 						<xsl:call-template name="local:binaryToDecimal">
 							<xsl:with-param name="binary" select="substring($binaryAsciiString, 7, 6)"/>
-							<xsl:with-param name="sum" select="0"/>
-							<xsl:with-param name="index" select="0"/>
 						</xsl:call-template>
 					</xsl:variable>
 					<xsl:variable name="digit3">
 						<xsl:call-template name="local:binaryToDecimal">
 							<xsl:with-param name="binary"
 								select="concat(substring($binaryAsciiString, 13), '00')"/>
-							<xsl:with-param name="sum" select="0"/>
-							<xsl:with-param name="index" select="0"/>
 						</xsl:call-template>
 					</xsl:variable>
 					
@@ -244,8 +303,8 @@
 	<!-- Template to convert a binary number to decimal representation; this template calls template pow -->
 	<xsl:template name="local:binaryToDecimal">
 		<xsl:param name="binary"/>
-		<xsl:param name="sum"/>
-		<xsl:param name="index"/>
+		<xsl:param name="sum" select="0"/>
+		<xsl:param name="index" select="0"/>
 		<xsl:choose>
 			<xsl:when test="substring($binary,string-length($binary) - 1) != ''">
 				<xsl:variable name="power">
@@ -310,18 +369,16 @@
 		<xsl:param name="string"/>
 		<xsl:variable name="char" select="substring($string, 1, 1)"/>
 		<xsl:if test="$char != ''">
-			<xsl:variable name="decimal" select="$datamap/datamap/asciidecimal/item[ascii = $char]/decimal"/>
+			<xsl:variable name="binary" select="$binarydatamap/datamap/asciibinary/item[ascii = $char]/binary"/>
 			<xsl:choose>
-				<xsl:when test="$decimal &lt; 64">
+				<xsl:when test="string-length($binary) = 6">
 					<xsl:text>00</xsl:text>
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:text>0</xsl:text>
 				</xsl:otherwise>
 			</xsl:choose>
-			<xsl:call-template name="local:decimalToBinary">
-				<xsl:with-param name="decimal" select="$decimal"/>
-			</xsl:call-template>
+			<xsl:value-of select="$binary"/>
 		</xsl:if>
 		<xsl:variable name="remaining" select="substring($string, 2)"/>
 		<xsl:if test="$remaining != ''">
