@@ -1,153 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 	Authors:
-	Ilya Kharlamov
-	Mukul Gandhi
+		Ilya Kharlamov
+		Mukul Gandhi
 	Released under the MIT license
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:b64="https://github.com/ilyakharlamov/xslt_base64" 
 	xmlns:local="http://localhost/base64.xsl"
 	xmlns:test="http://localhost/test">
-	<xsl:variable name="datamap" select="document('base64_datamap.xml')"/>
-	<xsl:variable name="binarydatamap" select="document('file:///C:/tmp/GitHub/xslt_base64/base64_binarydatamap.xml')"/>
+	<xsl:variable name="binarydatamap" select="document('base64_binarydatamap.xml')"/>
 	<xsl:key name="binaryToBase64" match="item" use="binary" />
 	<xsl:key name="asciiToBinary" match="item" use="ascii" />
-	
-	<xsl:template match="/">
-		<xsl:call-template name="test:encodeEquals">
-			<xsl:with-param name="expected" select="'MQ=='"/>
-			<xsl:with-param name="source" select="'1'"/>
-			<xsl:with-param name="name" select="'Digit to b64'"/>
-		</xsl:call-template>
-		<xsl:call-template name="test:encodeEquals">
-			<xsl:with-param name="expected" select="'TWFu'"/>
-			<xsl:with-param name="source" select="'Man'"/>
-			<xsl:with-param name="name" select="'Digit to b64'"/>
-			</xsl:call-template>
-		<xsl:call-template name="test:test">
-			<xsl:with-param name="asciiString" select="'Hello World!'"/>
-		</xsl:call-template>
-		<xsl:call-template name="test:test">
-			<xsl:with-param name="asciiString" select="'This is a base64 encoding'"/>
-		</xsl:call-template>
-		<xsl:call-template name="test:test">
-			<xsl:with-param name="asciiString" select="'1'"/>
-		</xsl:call-template>
-		<xsl:call-template name="test:decodeEquals">
-			<xsl:with-param name="expected" select="'1'"/>
-			<xsl:with-param name="encodedResult" select="'MQ'"/>
-			<xsl:with-param name="name" select="'Missing padding'"/>
-		</xsl:call-template>
-		<xsl:call-template name="test:equals">
-			<xsl:with-param name="expected" select="'UGFyYWdyYXBoU3R5bGUvU3RvcnkgQm9keQ'"/>
-			<xsl:with-param name="result">
-				<xsl:call-template name="b64:encode">
-					<xsl:with-param name="asciiString" select="'ParagraphStyle/Story Body'"/>
-					<xsl:with-param name="padding" select="false()"/>
-				</xsl:call-template>
-			</xsl:with-param>
-			<xsl:with-param name="name" select="'nopadding'"/>
-		</xsl:call-template>
-		<xsl:call-template name="test:equals">
-			<xsl:with-param name="expected" select="'Li5hPzw-Pz8_'"></xsl:with-param>
-			<xsl:with-param name="result">
-				<xsl:call-template name="b64:encode">
-					<xsl:with-param name="asciiString" select="'..a?&lt;&gt;???'"/>
-					<xsl:with-param name="padding" select="false()"/>
-					<xsl:with-param name="urlsafe" select="true()"></xsl:with-param>
-				</xsl:call-template>
-			</xsl:with-param>
-			<xsl:with-param name="name" select="'urls'"/>
-		</xsl:call-template>
-	</xsl:template>
-
-	<xsl:template name="test:test">
-		<xsl:param name="asciiString"/>
-		<xsl:variable name="encoded">
-			<xsl:variable name="tmp">
-				<xsl:call-template name="b64:encode">
-					<xsl:with-param name="asciiString" select="$asciiString"/>
-				</xsl:call-template>
-			</xsl:variable>
-			<xsl:value-of select="normalize-space($tmp)"/>
-		</xsl:variable>
-		<xsl:text>String text '</xsl:text>
-		<xsl:value-of select="$asciiString"/>
-		<xsl:text>' is '</xsl:text>
-		<xsl:value-of select="$encoded"/>
-		<xsl:text>'</xsl:text>
-		<xsl:variable name="decoded">
-			<xsl:call-template name="b64:decode">
-				<xsl:with-param name="base64String" select="$encoded"/>
-			</xsl:call-template>
-		</xsl:variable>
-		<xsl:choose>
-			<xsl:when test="$asciiString = $decoded">
-				<xsl:text>&#xa;Decode is OK</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>Decode failed: '</xsl:text>
-				<xsl:value-of select="$decoded"/>
-				<xsl:text>'</xsl:text>
-			</xsl:otherwise>
-		</xsl:choose>
-		<xsl:text>&#xa;------------------------&#xa;</xsl:text>
-	</xsl:template>
-
-	<xsl:template name="test:equals">
-		<xsl:param name="expected"/>
-		<xsl:param name="result"/>
-		<xsl:param name="name"/>
-		<xsl:choose>
-			<xsl:when test="$expected = $result">
-				<xsl:text>Test '</xsl:text>
-				<xsl:value-of select="$name"/>
-				<xsl:text>' PASSED&#xa;</xsl:text>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:text>Test '</xsl:text>
-				<xsl:value-of select="$name"/>
-				<xsl:text>' FAILED. Expected: '</xsl:text>
-				<xsl:value-of select="$expected"/>
-				<xsl:text>' but result was: '</xsl:text>
-				<xsl:value-of select="$result"/>
-				<xsl:text>'&#xa;</xsl:text>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:template>
-
-	<xsl:template name="test:decodeEquals">
-		<xsl:param name="expected"/>
-		<xsl:param name="encodedResult"/>
-		<xsl:param name="name"/>
-		<xsl:variable name="tmp">
-			<xsl:call-template name="b64:decode">
-				<xsl:with-param name="base64String" select="normalize-space($encodedResult)"/>
-			</xsl:call-template>
-		</xsl:variable>
-		<xsl:call-template name="test:equals">
-			<xsl:with-param name="expected" select="normalize-space($expected)"/>
-			<xsl:with-param name="result" select="normalize-space($tmp)"/>
-			<xsl:with-param name="name" select="$name"/>
-		</xsl:call-template>
-	</xsl:template>
-
-	<xsl:template name="test:encodeEquals">
-		<xsl:param name="expected"/>
-		<xsl:param name="source"/>
-		<xsl:param name="name"/>
-		<xsl:variable name="tmp">
-			<xsl:call-template name="b64:encode">
-				<xsl:with-param name="asciiString" select="$source"/>
-			</xsl:call-template>
-		</xsl:variable>
-		<xsl:call-template name="test:equals">
-			<xsl:with-param name="expected" select="$expected"/>
-			<xsl:with-param name="result" select="normalize-space($tmp)"/>
-			<xsl:with-param name="name" select="$name"/>
-		</xsl:call-template>
-	</xsl:template>
 
 	<!-- Template to convert the Ascii string into base64 representation -->
 	<xsl:template name="b64:encode">
@@ -386,15 +250,9 @@
 	<!-- Template to convert the base64 binary string to ascii representation -->
 	<xsl:template name="local:base64BinaryStringToAscii">
 		<xsl:param name="binaryString"/>
-		<xsl:if test="substring($binaryString, 1, 8) != ''">
-			<xsl:variable name="asciiDecimal">
-				<xsl:call-template name="local:binaryToDecimal">
-					<xsl:with-param name="binary" select="substring($binaryString, 1, 8)"/>
-					<xsl:with-param name="sum" select="0"/>
-					<xsl:with-param name="index" select="0"/>
-				</xsl:call-template>
-			</xsl:variable>
-			<xsl:value-of select="$datamap/datamap/asciidecimal/item[decimal = $asciiDecimal]/ascii"/>
+		<xsl:variable name="binaryPortion" select="substring($binaryString, 1, 8)"/>
+		<xsl:if test="$binaryPortion != ''">
+			<xsl:value-of select="$binarydatamap/datamap/asciibinary/item[binary = $binaryPortion]/ascii"/>
 			<xsl:call-template name="local:base64BinaryStringToAscii">
 				<xsl:with-param name="binaryString" select="substring($binaryString, 9)"/>
 			</xsl:call-template>
@@ -403,21 +261,14 @@
 	<!-- Template to convert a base64 string to binary representation; this template calls template decimalToBinary -->
 	<xsl:template name="local:base64StringToBinary">
 		<xsl:param name="string"/>
-
-		<xsl:if test="substring($string, 1, 1) != ''">
-			<xsl:variable name="binary">
-				<xsl:call-template name="local:decimalToBinary">
-					<xsl:with-param name="decimal"
-						select="$datamap/datamap/decimalbase64/item[base64 = substring($string, 1, 1)]/decimal"/>
-					<xsl:with-param name="prev" select="''"/>
-				</xsl:call-template>
-			</xsl:variable>
+		<xsl:variable name="base64Portion" select="substring($string, 1, 1)"/>
+		<xsl:if test="$base64Portion != ''">
+			<xsl:variable name="binary" select="$binarydatamap/datamap/binarybase64/item[base64 = $base64Portion]/binary"/>
 			<xsl:call-template name="local:padZeros">
 				<xsl:with-param name="string" select="$binary"/>
 				<xsl:with-param name="no" select="6 - string-length($binary)"/>
 			</xsl:call-template>
 		</xsl:if>
-
 		<xsl:if test="substring($string, 2) != ''">
 			<xsl:call-template name="local:base64StringToBinary">
 				<xsl:with-param name="string" select="substring($string, 2)"/>
