@@ -14,7 +14,25 @@ Usage example:
     <xsl:template match="/">
         <xsl:text>encoded Man is </xsl:text>
         <xsl:call-template name="b64:encode">
-            <xsl:with-param name="asciiString" select="'Man'"></xsl:with-param>
+            <xsl:with-param name="asciiString" select="'Man'"/>
+        </xsl:call-template>
+        <xsl:text>&#x0A;encoded 1 with padding is </xsl:text>
+        <xsl:call-template name="b64:encode">
+            <xsl:with-param name="asciiString" select="'1'"/>
+        </xsl:call-template>
+        <xsl:text>&#x0A;encoded 1 without padding is </xsl:text>
+        <xsl:call-template name="b64:encode">
+            <xsl:with-param name="asciiString" select="'1'"/>
+            <xsl:with-param name="padding" select="false()"/>
+        </xsl:call-template>
+        <xsl:text>&#x0A;encoded ..a?&lt;&gt;???!????? as regular is </xsl:text>
+        <xsl:call-template name="b64:encode">
+            <xsl:with-param name="asciiString" select="'..a?&lt;&gt;???!?????'"/>
+        </xsl:call-template>
+        <xsl:text>&#x0A;encoded ..a?&lt;&gt;???!????? as urlsafe is </xsl:text>
+        <xsl:call-template name="b64:encode">
+            <xsl:with-param name="asciiString" select="'..a?&lt;&gt;???!?????'"/>
+            <xsl:with-param name="urlsafe" select="true()"/>
         </xsl:call-template>
         <xsl:text>&#x0A;decoded MQ== is </xsl:text>
         <xsl:call-template name="b64:decode">
@@ -25,8 +43,11 @@ Usage example:
 ```
 
 Output:
-```
-encoded Man is TWFu
-decoded MQ== is 1
-```
+<pre>encoded Man is TWFu
+encoded 1 with padding is MQ==
+encoded 1 without padding is MQ
+encoded ..a?<>???!????? as regular is Li5hPzw+Pz8/IT8/Pz8/
+encoded ..a?<>???!????? as urlsafe is Li5hPzw-Pz8_IT8_Pz8_
+decoded MQ== is 1</pre>
+
 Also supports 'url safe' and 'no padding' syntax via params to b64:encode template
