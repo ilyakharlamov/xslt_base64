@@ -6,8 +6,8 @@
 	Released under the MIT license
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:b64="https://github.com/ilyakharlamov/xslt_base64" 
 	xmlns:local="http://localhost/base64.xsl"
+	xmlns:b64="https://github.com/ilyakharlamov/xslt_base64" 
 	xmlns:test="http://localhost/test">
 	<xsl:variable name="binarydatamap" select="document('base64_binarydatamap.xml')"/>
 	<xsl:key name="binaryToBase64" match="item" use="binary" />
@@ -199,9 +199,7 @@
 		<xsl:if test="($secondLastChar != '=') and ($lastChar = '=')">
 			<xsl:variable name="binaryBase64String">
 				<xsl:call-template name="local:base64StringToBinary">
-					<xsl:with-param name="string"
-						select="substring($base64StringUniversal, 1, string-length($base64StringUniversal) - 4)"
-					/>
+					<xsl:with-param name="string" select="substring-before($base64StringUniversal,'=')" />
 				</xsl:call-template>
 			</xsl:variable>
 			<xsl:call-template name="local:base64BinaryStringToAscii">
@@ -209,53 +207,63 @@
 			</xsl:call-template>
 			<xsl:variable name="partialBinary">
 				<xsl:call-template name="local:base64StringToBinary">
-					<xsl:with-param name="string"
-						select="substring($base64StringUniversal, string-length($base64StringUniversal) - 3, 3)"
-					/>
+					<xsl:with-param name="string" select="substring($base64StringUniversal, string-length($base64StringUniversal) - 3, 3)"/>
 				</xsl:call-template>
 			</xsl:variable>
 			<xsl:call-template name="local:base64BinaryStringToAscii">
-				<xsl:with-param name="binaryString" select="substring($partialBinary, 1, 8)"/>
-			</xsl:call-template>
-			<xsl:call-template name="local:base64BinaryStringToAscii">
-				<xsl:with-param name="binaryString" select="substring($partialBinary, 9, 8)"/>
+				<xsl:with-param name="binaryString" select="substring($partialBinary, 1, 6)"/>
 			</xsl:call-template>
 		</xsl:if>
 
 		<!-- execute if last 2 characters are both = -->
 		<xsl:if test="($secondLastChar = '=') and ($lastChar = '=')">
+			<!-- xsl:text>this is == </xsl:text -->
+			
 			<xsl:variable name="binaryBase64String">
 				<xsl:call-template name="local:base64StringToBinary">
-					<xsl:with-param name="string"
-						select="substring($base64StringUniversal, 1, string-length($base64StringUniversal) - 4)"
-					/>
+					<!-- xsl:with-param name="string" select="substring($base64StringUniversal, 1, string-length($base64StringUniversal) - 4)" / -->
+					<xsl:with-param name="string" select="substring-before($base64StringUniversal,'==')" />
 				</xsl:call-template>
 			</xsl:variable>
+			<!-- xsl:value-of select="substring-before($base64StringUniversal,'==')"/ -->
 			<xsl:call-template name="local:base64BinaryStringToAscii">
 				<xsl:with-param name="binaryString" select="$binaryBase64String"/>
 			</xsl:call-template>
 			<xsl:variable name="partialBinary">
 				<xsl:call-template name="local:base64StringToBinary">
-					<xsl:with-param name="string"
-						select="substring($base64StringUniversal, string-length($base64StringUniversal) - 3, 2)"
-					/>
+					<xsl:with-param name="string" select="substring($base64StringUniversal, string-length($base64StringUniversal) - 3, 2)"/>
 				</xsl:call-template>
 			</xsl:variable>
 			<xsl:call-template name="local:base64BinaryStringToAscii">
-				<xsl:with-param name="binaryString" select="substring($partialBinary, 1, 8)"/>
+				<xsl:with-param name="binaryString" select="substring($partialBinary, 1, 7)"/>
 			</xsl:call-template>
 		</xsl:if>
 	</xsl:template>
-
 	<!-- Template to convert the base64 binary string to ascii representation -->
 	<xsl:template name="local:base64BinaryStringToAscii">
 		<xsl:param name="binaryString"/>
-		<xsl:variable name="binaryPortion" select="substring($binaryString, 1, 8)"/>
-		<xsl:if test="$binaryPortion != ''">
-			<xsl:value-of select="$binarydatamap/datamap/asciibinary/item[binary = $binaryPortion]/ascii"/>
-			<xsl:call-template name="local:base64BinaryStringToAscii">
-				<xsl:with-param name="binaryString" select="substring($binaryString, 9)"/>
-			</xsl:call-template>
+		<xsl:variable name="binaryPortion16" select="substring($binaryString, 1, 16)"/>
+		<xsl:variable name="binaryPortion8" select="substring($binaryString, 1, 8)"/>
+		<xsl:if test="$binaryPortion8 != ''">
+			<xsl:variable name="decoded8" select="$binarydatamap/datamap/asciibinary/item[binary = $binaryPortion8]/ascii"/>
+			<xsl:variable name="decoded16" select="$binarydatamap/datamap/asciibinary/item[binary = $binaryPortion16]/ascii"/>
+			<xsl:choose>
+				<xsl:when test="$decoded8 != ''">
+					<!-- xsl:text>(8)</xsl:text -->
+					<xsl:value-of select="$decoded8"/>
+					<xsl:call-template name="local:base64BinaryStringToAscii">
+						<xsl:with-param name="binaryString" select="substring($binaryString, 9)"/>
+					</xsl:call-template>
+				</xsl:when>
+				<xsl:otherwise>
+					<!-- xsl:text>(16)</xsl:text -->
+					<xsl:value-of select="$decoded16"/>
+					<xsl:call-template name="local:base64BinaryStringToAscii">
+						<xsl:with-param name="binaryString" select="substring($binaryString, 17)"/>
+					</xsl:call-template>
+				</xsl:otherwise>
+			</xsl:choose>
+			
 		</xsl:if>
 	</xsl:template>
 	<!-- Template to convert a base64 string to binary representation; this template calls template decimalToBinary -->
