@@ -71,7 +71,8 @@ decoded MQ== is 1</pre>
 Also supports 'url safe' and 'no padding' syntax via params to b64:encode template
 
 #contact
-razblade@gmail.com
+razblade@gmail.com,
+ilyakharlamov@gmail.com
 
 #license
 The MIT License (MIT)
