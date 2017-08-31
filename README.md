@@ -1,11 +1,3 @@
-README 
-----------------
-1. description
-2. requirement
-3. example
-4. contact
-5. license
-
 Description
 ------------
 Library to represent binary data in an ASCII characters.
@@ -18,7 +10,8 @@ Requirements
 -------------
 any lib that can do XSLT 1.0 transformation such as libxml, xsltproc, xerces, saxon, Microsoft msxml etc
 
-#example:
+Example
+--------
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet 
@@ -45,19 +38,6 @@ any lib that can do XSLT 1.0 transformation such as libxml, xsltproc, xerces, sa
             <xsl:with-param name="asciiString" select="'1'"/>
             <xsl:with-param name="padding" select="false()"/>
         </xsl:call-template>
-        <xsl:text>&#x0A;encoded ..a?&lt;&gt;???!????? as regular is </xsl:text>
-        <xsl:call-template name="b64:encode">
-            <xsl:with-param name="asciiString" select="'..a?&lt;&gt;???!?????'"/>
-        </xsl:call-template>
-        <xsl:text>&#x0A;encoded ..a?&lt;&gt;???!????? as urlsafe is </xsl:text>
-        <xsl:call-template name="b64:encode">
-            <xsl:with-param name="asciiString" select="'..a?&lt;&gt;???!?????'"/>
-            <xsl:with-param name="urlsafe" select="true()"/>
-        </xsl:call-template>
-        <xsl:text>&#x0A;decoded MQ== is </xsl:text>
-        <xsl:call-template name="b64:decode">
-            <xsl:with-param name="base64String" select="'MQ=='"></xsl:with-param>
-        </xsl:call-template>
     </xsl:template>
 </xsl:stylesheet>
 ```
@@ -70,11 +50,12 @@ decoded MQ== is 1</pre>
 
 Also supports 'url safe' and 'no padding' syntax via params to b64:encode template
 
-#contact
-razblade@gmail.com,
-ilyakharlamov@gmail.com
+Contact
+--------
+ilya.kharlamov@gmail.com
 
-#license
+License
+-------
 The MIT License (MIT)
 
 Copyright (c) 2012,2013
