@@ -1,4 +1,4 @@
-﻿#README 
+README 
 ----------------
 1. description
 2. requirement
@@ -6,7 +6,7 @@
 4. contact
 5. license
 
-#Description
+Description
 ------------
 Library to represent binary data in an ASCII characters.
 Base64-encoded data takes about 33% more space than the original data.
@@ -14,7 +14,7 @@ Allows encoding and decoding.
 Support english and russian letters for decoding, 
 other languages can simply add by editing base64_binarydatamap.xml
 
-#requirements
+Requirements
 -------------
 any lib that can do XSLT 1.0 transformation such as libxml, xsltproc, xerces, saxon, Microsoft msxml etc
 
