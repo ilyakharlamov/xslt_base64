@@ -38,6 +38,10 @@ Example
             <xsl:with-param name="asciiString" select="'1'"/>
             <xsl:with-param name="padding" select="false()"/>
         </xsl:call-template>
+        <xsl:text>&#x0A;decoded MQ== is </xsl:text>
+        <xsl:call-template name="b64:decode">
+             <xsl:with-param name="base64String" select="'MQ=='"/>
+        </xsl:call-template>
     </xsl:template>
 </xsl:stylesheet>
 ```
