@@ -25,7 +25,7 @@ Example
         <xsl:call-template name="b64:encode">
             <xsl:with-param name="asciiString" select="'Man'"/>
         </xsl:call-template>
-		<xsl:text>&#x0A;encoded Человек is </xsl:text>
+	<xsl:text>&#x0A;encoded unicode Человек is </xsl:text>
         <xsl:call-template name="b64:encode">
             <xsl:with-param name="asciiString" select="'Человек'"/>
         </xsl:call-template>
@@ -48,6 +48,7 @@ Example
 
 Output:
 <pre>encoded Man is TWFu
+encoded unicode Человек is 0KfQtdC70L7QstC10Lo=
 encoded 1 with padding is MQ==
 encoded 1 without padding is MQ
 decoded MQ== is 1</pre>
