@@ -6,7 +6,8 @@
 4. contact
 5. license
 
-#descrption
+#Description
+------------
 Library to represent binary data in an ASCII characters.
 Base64-encoded data takes about 33% more space than the original data.
 Allows encoding and decoding.
@@ -14,7 +15,8 @@ Support english and russian letters for decoding,
 other languages can simply add by editing base64_binarydatamap.xml
 
 #requirements
-an app that can do xsl transformation
+-------------
+any lib that can do XSLT 1.0 transformation such as libxml, xsltproc, xerces, saxon, Microsoft msxml etc
 
 #example:
 ```xml
@@ -64,8 +66,6 @@ Output:
 <pre>encoded Man is TWFu
 encoded 1 with padding is MQ==
 encoded 1 without padding is MQ
-encoded ..a?<>???!????? as regular is Li5hPzw+Pz8/IT8/Pz8/
-encoded ..a?<>???!????? as urlsafe is Li5hPzw-Pz8_IT8_Pz8_
 decoded MQ== is 1</pre>
 
 Also supports 'url safe' and 'no padding' syntax via params to b64:encode template
