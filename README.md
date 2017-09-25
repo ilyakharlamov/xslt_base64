@@ -1,10 +1,10 @@
 Description
 ------------
-Library to represent binary data in an ASCII characters.
+Library to represent binary data as ASCII characters.
 Base64-encoded data takes about 33% more space than the original data.
 Allows encoding and decoding.
-Support english and russian letters for decoding, 
-other languages can simply add by editing base64_binarydatamap.xml
+Supports English and Russian strings for decoding/encoding, 
+other languages can simply be added by editing base64_binarydatamap.xml
 
 Requirements
 -------------
